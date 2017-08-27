@@ -6,8 +6,8 @@ using IdentityModel;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using IdentityServer4.Test;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 
 namespace IdentityServer4.Quickstart.UI
 {
@@ -32,6 +31,7 @@ namespace IdentityServer4.Quickstart.UI
         private readonly AccountService _account;
 
         public AccountController(
+            IAuthenticationSchemeProvider schemes,
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IHttpContextAccessor httpContextAccessor,
@@ -40,7 +40,7 @@ namespace IdentityServer4.Quickstart.UI
             // if the TestUserStore is not in DI, then we'll just use the global users collection
             _users = users ?? new TestUserStore(TestUsers.Users);
             _interaction = interaction;
-            _account = new AccountService(interaction, httpContextAccessor, clientStore);
+            _account = new AccountService(schemes, interaction, httpContextAccessor, clientStore);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace IdentityServer4.Quickstart.UI
 
                     // issue authentication cookie with subject ID and username
                     var user = _users.FindByUsername(model.Username);
-                    await HttpContext.Authentication.SignInAsync(user.SubjectId, user.Username, props);
+                    await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
 
                     // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
                     if (_interaction.IsValidReturnUrl(model.ReturnUrl))
@@ -136,7 +136,7 @@ namespace IdentityServer4.Quickstart.UI
                 try
                 {
                     // hack: try/catch to handle social providers that throw
-                    await HttpContext.Authentication.SignOutAsync(vm.ExternalAuthenticationScheme, 
+                    await HttpContext.SignOutAsync(vm.ExternalAuthenticationScheme, 
                         new AuthenticationProperties { RedirectUri = url });
                 }
                 catch(NotSupportedException) // this is for the external providers that don't have signout
@@ -148,7 +148,7 @@ namespace IdentityServer4.Quickstart.UI
             }
 
             // delete local authentication cookie
-            await HttpContext.Authentication.SignOutAsync();
+            await HttpContext.SignOutAsync();
 
             return View("LoggedOut", vm);
         }
@@ -174,7 +174,7 @@ namespace IdentityServer4.Quickstart.UI
                     id.AddClaim(new Claim(ClaimTypes.NameIdentifier, HttpContext.User.Identity.Name));
                     id.AddClaim(new Claim(ClaimTypes.Name, HttpContext.User.Identity.Name));
 
-                    await HttpContext.Authentication.SignInAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme, new ClaimsPrincipal(id), props);
+                    await HttpContext.SignInAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme, new ClaimsPrincipal(id), props);
                     return Redirect(returnUrl);
                 }
                 else
@@ -250,18 +250,26 @@ namespace IdentityServer4.Quickstart.UI
 
             // if the external provider issued an id_token, we'll keep it for signout
             AuthenticationProperties props = null;
-            var id_token = info.Properties.GetTokenValue("id_token");
-            if (id_token != null)
+
+            // There are two AuthenticationProperties defined by Asp.Net (bug?)
+            // GetTokenValue extension only defined for the one defined in Microsoft.AspNetCore.Http.Authentication
+            // but the new AuthenticationManagerExtensions uses the one defined in Microsoft.AspNetCore.Authentication
+            // we have no choice but to reproduce the method here.
+            // TODO: replace this back to GetTokenValue when it is fixed in the future (if ever)
+            // var id_token = info.Properties.GetTokenValue("id_token");
+            string key = ".Token.id_token";
+            if (info.Properties.Items.ContainsKey(key))
             {
+                string id_token = info.Properties.Items[key];
                 props = new AuthenticationProperties();
                 props.StoreTokens(new[] { new AuthenticationToken { Name = "id_token", Value = id_token } });
             }
 
             // issue authentication cookie for user
-            await HttpContext.Authentication.SignInAsync(user.SubjectId, user.Username, provider, props, additionalClaims.ToArray());
+            await HttpContext.SignInAsync(user.SubjectId, user.Username, provider, props, additionalClaims.ToArray());
 
             // delete temporary cookie used during external authentication
-            await HttpContext.Authentication.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
 
             // validate return URL and redirect back to authorization endpoint
             if (_interaction.IsValidReturnUrl(returnUrl))
