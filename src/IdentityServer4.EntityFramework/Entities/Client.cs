@@ -28,7 +28,10 @@ namespace IdentityServer4.EntityFramework.Entities
         public bool AllowAccessTokensViaBrowser { get; set; }
         public List<ClientRedirectUri> RedirectUris { get; set; }
         public List<ClientPostLogoutRedirectUri> PostLogoutRedirectUris { get; set; }
-        public string LogoutUri { get; set; }
+        public string FrontChannelLogoutUri { get; set; }
+        public string BackChannelLogoutUri { get; set; }
+        public bool FrontChannelLogoutSessionRequired { get; set; } = true;
+        public bool BackChannelLogoutSessionRequired { get; set; } = true;
         public bool LogoutSessionRequired { get; set; } = true;
         public bool AllowOfflineAccess { get; set; }
         public List<ClientScope> AllowedScopes { get; set; }
@@ -37,6 +40,7 @@ namespace IdentityServer4.EntityFramework.Entities
         public int AuthorizationCodeLifetime { get; set; } = 300;
         public int AbsoluteRefreshTokenLifetime { get; set; } = 2592000;
         public int SlidingRefreshTokenLifetime { get; set; } = 1296000;
+        public int? ConsentLifetime { get; set; } = null;
         public int RefreshTokenUsage { get; set; } = (int)TokenUsage.OneTimeOnly;
         public bool UpdateAccessTokenClaimsOnRefresh { get; set; }
         public int RefreshTokenExpiration { get; set; } = (int)TokenExpiration.Absolute;

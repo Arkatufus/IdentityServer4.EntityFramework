@@ -21,7 +21,7 @@ namespace IdentityServer4.EntityFramework.Mappers
         {
             // entity to model
             CreateMap<ApiResource, Models.ApiResource>(MemberList.Destination)
-                .ForMember(x => x.ApiSecrets, opt => opt.MapFrom(src => src.Secrets.Select(x => x)))
+                .ForMember(x => x.ApiSecrets, opt => opt.MapFrom(src => src.ApiSecrets.Select(x => x)))
                 .ForMember(x => x.Scopes, opt => opt.MapFrom(src => src.Scopes.Select(x => x)))
                 .ForMember(x => x.UserClaims, opts => opts.MapFrom(src => src.UserClaims.Select(x => x.Type)));
             CreateMap<ApiSecret, Models.Secret>(MemberList.Destination);
@@ -30,7 +30,7 @@ namespace IdentityServer4.EntityFramework.Mappers
 
             // model to entity
             CreateMap<Models.ApiResource, ApiResource>(MemberList.Source)
-                .ForMember(x => x.Secrets, opts => opts.MapFrom(src => src.ApiSecrets.Select(x => x)))
+                .ForMember(x => x.ApiSecrets, opts => opts.MapFrom(src => src.ApiSecrets.Select(x => x)))
                 .ForMember(x => x.Scopes, opts => opts.MapFrom(src => src.Scopes.Select(x => x)))
                 .ForMember(x => x.UserClaims, opts => opts.MapFrom(src => src.UserClaims.Select(x => new ApiResourceClaim { Type = x })));
             CreateMap<Models.Secret, ApiSecret>(MemberList.Source);

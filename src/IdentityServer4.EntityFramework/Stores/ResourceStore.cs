@@ -38,7 +38,7 @@ namespace IdentityServer4.EntityFramework.Stores
                 select api;
 
             var apis = query
-                .Include(x => x.Secrets)
+                .Include(x => x.ApiSecrets)
                 .Include(x => x.Scopes)
                 .ThenInclude(s => s.UserClaims)
                 .Include(x => x.UserClaims);
@@ -59,7 +59,7 @@ namespace IdentityServer4.EntityFramework.Stores
                 select apiResource;
 
             var apis = query
-                .Include(x => x.Secrets)
+                .Include(x => x.ApiSecrets)
                 .Include(x => x.Scopes)
                     .ThenInclude(s => s.UserClaims)
                 .Include(x => x.UserClaims);
@@ -84,7 +84,7 @@ namespace IdentityServer4.EntityFramework.Stores
                 .Include(x => x.UserClaims);
 
             var apis = _context.ApiResources
-                .Include(x => x.Secrets)
+                .Include(x => x.ApiSecrets)
                 .Include(x => x.Scopes)
                     .ThenInclude(s => s.UserClaims)
                 .Include(x => x.UserClaims);

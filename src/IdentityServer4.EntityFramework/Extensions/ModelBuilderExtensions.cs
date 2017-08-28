@@ -155,7 +155,7 @@ namespace IdentityServer4.EntityFramework.Extensions
 
                 apiResource.HasIndex(x => x.Name).IsUnique();
 
-                apiResource.HasMany(x => x.Secrets).WithOne(x => x.ApiResource).IsRequired().OnDelete(DeleteBehavior.Cascade);
+                apiResource.HasMany(x => x.ApiSecrets).WithOne(x => x.ApiResource).IsRequired().OnDelete(DeleteBehavior.Cascade);
                 apiResource.HasMany(x => x.Scopes).WithOne(x => x.ApiResource).IsRequired().OnDelete(DeleteBehavior.Cascade);
                 apiResource.HasMany(x => x.UserClaims).WithOne(x => x.ApiResource).IsRequired().OnDelete(DeleteBehavior.Cascade);
             });

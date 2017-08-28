@@ -11,7 +11,7 @@ using System;
 namespace Host.Migrations.IdentityServer.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20170827230553_ConfigCore2.0")]
+    [Migration("20170828034027_ConfigCore2.0")]
     partial class ConfigCore20
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,6 +169,10 @@ namespace Host.Migrations.IdentityServer.ConfigurationDb
 
                     b.Property<int>("AuthorizationCodeLifetime");
 
+                    b.Property<bool>("BackChannelLogoutSessionRequired");
+
+                    b.Property<string>("BackChannelLogoutUri");
+
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasMaxLength(200);
@@ -179,9 +183,15 @@ namespace Host.Migrations.IdentityServer.ConfigurationDb
                     b.Property<string>("ClientUri")
                         .HasMaxLength(2000);
 
+                    b.Property<int?>("ConsentLifetime");
+
                     b.Property<bool>("EnableLocalLogin");
 
                     b.Property<bool>("Enabled");
+
+                    b.Property<bool>("FrontChannelLogoutSessionRequired");
+
+                    b.Property<string>("FrontChannelLogoutUri");
 
                     b.Property<int>("IdentityTokenLifetime");
 
@@ -190,8 +200,6 @@ namespace Host.Migrations.IdentityServer.ConfigurationDb
                     b.Property<string>("LogoUri");
 
                     b.Property<bool>("LogoutSessionRequired");
-
-                    b.Property<string>("LogoutUri");
 
                     b.Property<bool>("PrefixClientClaims");
 
@@ -462,7 +470,7 @@ namespace Host.Migrations.IdentityServer.ConfigurationDb
             modelBuilder.Entity("IdentityServer4.EntityFramework.Entities.ApiSecret", b =>
                 {
                     b.HasOne("IdentityServer4.EntityFramework.Entities.ApiResource", "ApiResource")
-                        .WithMany("Secrets")
+                        .WithMany("ApiSecrets")
                         .HasForeignKey("ApiResourceId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
